@@ -12,6 +12,7 @@ export default function Home() {
           fill
           className="object-cover opacity-40"
           priority
+          sizes="100vw"
         />
         <div className="relative z-10 p-4">
           <h1 className="font-playfair text-5xl md:text-7xl font-bold text-near-black">Style Reimagined.</h1>
@@ -28,27 +29,50 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h3 className="text-3xl font-bold text-center mb-12">Shop by Category</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {/* Category Card */}
             <Link href="/shop" className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer">
-              <Image src="https://placehold.co/400x400/B2AC88/FFFFFF?text=Vintage+Denim" fill className="object-cover transition-transform duration-500 group-hover:scale-110" alt="Vintage Denim" />
+              <Image 
+                src="https://placehold.co/400x400/B2AC88/FFFFFF?text=Vintage+Denim" 
+                fill 
+                className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                alt="Vintage Denim" 
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
               <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                 <h4 className="text-white text-2xl font-bold">Vintage Denim</h4>
               </div>
             </Link>
             <Link href="/shop" className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer">
-              <Image src="https://placehold.co/400x400/E07A5F/FFFFFF?text=90s+Streetwear" fill className="object-cover transition-transform duration-500 group-hover:scale-110" alt="90s Streetwear" />
+              <Image 
+                src="https://placehold.co/400x400/E07A5F/FFFFFF?text=90s+Streetwear" 
+                fill 
+                className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                alt="90s Streetwear" 
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
               <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                 <h4 className="text-white text-2xl font-bold">90s Streetwear</h4>
               </div>
             </Link>
             <Link href="/shop" className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer">
-              <Image src="https://placehold.co/400x400/B2AC88/FFFFFF?text=Cozy+Knitwear" fill className="object-cover transition-transform duration-500 group-hover:scale-110" alt="Cozy Knitwear" />
+              <Image 
+                src="https://placehold.co/400x400/B2AC88/FFFFFF?text=Cozy+Knitwear" 
+                fill 
+                className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                alt="Cozy Knitwear" 
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
               <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                 <h4 className="text-white text-2xl font-bold">Cozy Knitwear</h4>
               </div>
             </Link>
             <Link href="/shop" className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer">
-              <Image src="https://placehold.co/400x400/E07A5F/FFFFFF?text=Unique+Accessories" fill className="object-cover transition-transform duration-500 group-hover:scale-110" alt="Accessories" />
+              <Image 
+                src="https://placehold.co/400x400/E07A5F/FFFFFF?text=Unique+Accessories" 
+                fill 
+                className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                alt="Accessories" 
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
               <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                 <h4 className="text-white text-2xl font-bold">Accessories</h4>
               </div>

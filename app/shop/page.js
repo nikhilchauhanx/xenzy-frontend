@@ -1,36 +1,52 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 
-// Mock data for products. Later, this will come from our backend API.
-const mockProducts = [
-  { id: 1, name: 'Classic Trench Coat', seller: '@timeless_threads', price: 120.00, imageUrl: 'https://placehold.co/400x500/B2AC88/FFFFFF?text=Item+5' },
-  { id: 2, name: 'Vintage Silk Scarf', seller: '@vintagesoul', price: 18.00, imageUrl: 'https://placehold.co/400x500/E07A5F/FFFFFF?text=Item+6' },
-  { id: 3, name: '80s Windbreaker Jacket', seller: '@retrorewind', price: 75.00, imageUrl: 'https://placehold.co/400x500/B2AC88/FFFFFF?text=Item+7' },
-  { id: 4, name: 'Leather Ankle Boots', seller: '@stylehunter', price: 88.00, imageUrl: 'https://placehold.co/400x500/E07A5F/FFFFFF?text=Item+8' },
-  { id: 5, name: 'Denim Overall Dress', seller: '@denimdreams', price: 45.00, imageUrl: 'https://placehold.co/400x500/B2AC88/FFFFFF?text=Item+9' },
-  { id: 6, name: 'Knit Cardigan', seller: '@cozycorner', price: 32.00, imageUrl: 'https://placehold.co/400x500/E07A5F/FFFFFF?text=Item+10' },
-];
-
-
 export default function ShopPage() {
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/api/products')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // THE FIX: Filter the data to ensure we only have valid items
+        // before setting the state.
+        const validProducts = data.filter(product => 
+          product && typeof product.imageUrl === 'string' && product.imageUrl.startsWith('http')
+        );
+        setProducts(validProducts);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error("Error fetching products:", error);
+        setError(error.message);
+        setIsLoading(false);
+      });
+  }, []);
+
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="lg:grid lg:grid-cols-4 lg:gap-8">
         {/* Filters Sidebar */}
         <aside className="lg:col-span-1">
           <h2 className="text-2xl font-bold mb-6">Filters</h2>
-          {/* We will make this a separate component later if needed */}
           <div className="space-y-6">
-            {/* Category Filter */}
             <div>
               <h3 className="font-semibold mb-3">Category</h3>
               <div className="space-y-2">
                 <label className="flex items-center"><input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-dusty-terracotta focus:ring-dusty-terracotta" /> <span className="ml-2">Tops</span></label>
                 <label className="flex items-center"><input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-dusty-terracotta focus:ring-dusty-terracotta" /> <span className="ml-2">Bottoms</span></label>
-                <label className="flex items-center"><input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-dusty-terracotta focus:ring-dusty-terracotta" /> <span className="ml-2">Dresses</span></label>
-                <label className="flex items-center"><input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-dusty-terracotta focus:ring-dusty-terracotta" /> <span className="ml-2">Outerwear</span></label>
               </div>
             </div>
-            {/* Price Filter */}
             <div>
               <h3 className="font-semibold mb-3">Price Range</h3>
               <input type="range" min="0" max="500" defaultValue="250" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-dusty-terracotta" />
@@ -50,12 +66,19 @@ export default function ShopPage() {
               <option>Sort by Price: High to Low</option>
             </select>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
-            {/* We map over our mock data and render a ProductCard for each item */}
-            {mockProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          
+          {isLoading ? (
+            <p>Loading products...</p>
+          ) : error ? (
+            <p className="text-red-500">Error: {error}</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+
         </div>
       </div>
     </div>
