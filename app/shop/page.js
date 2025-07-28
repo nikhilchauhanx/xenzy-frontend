@@ -1,42 +1,39 @@
-"use client";
-
-import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 
-export default function ShopPage() {
-  const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+// This is an async function that fetches data on the server.
+async function getProducts() {
+  try {
+    // We fetch directly from our backend API.
+    // The { cache: 'no-store' } option is crucial here.
+    const res = await fetch('http://localhost:3001/api/products', { cache: 'no-store' });
 
-  useEffect(() => {
-    fetch('http://localhost:3001/api/products')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        // THE FIX: Filter the data to ensure we only have valid items
-        // before setting the state.
-        const validProducts = data.filter(product => 
-          product && typeof product.imageUrl === 'string' && product.imageUrl.startsWith('http')
-        );
-        setProducts(validProducts);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error("Error fetching products:", error);
-        setError(error.message);
-        setIsLoading(false);
-      });
-  }, []);
+    if (!res.ok) {
+      throw new Error('Failed to fetch products');
+    }
+    
+    const data = await res.json();
+    
+    // Filter for valid products on the server
+    return data.filter(product => 
+      product && typeof product.imageUrl === 'string' && product.imageUrl.startsWith('http')
+    );
 
+  } catch (error) {
+    console.error("Error in getProducts:", error);
+    return []; // Return an empty array on error
+  }
+}
+
+
+// This is now an async Server Component
+export default async function ShopPage() {
+  // We call our data fetching function and wait for the result
+  const products = await getProducts();
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-        {/* Filters Sidebar */}
+        {/* Filters Sidebar (remains the same) */}
         <aside className="lg:col-span-1">
           <h2 className="text-2xl font-bold mb-6">Filters</h2>
           <div className="space-y-6">
@@ -67,18 +64,12 @@ export default function ShopPage() {
             </select>
           </div>
           
-          {isLoading ? (
-            <p>Loading products...</p>
-          ) : error ? (
-            <p className="text-red-500">Error: {error}</p>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
+            {/* We map over the products fetched on the server and render the cards */}
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         </div>
       </div>
     </div>

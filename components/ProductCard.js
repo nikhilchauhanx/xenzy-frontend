@@ -2,8 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default function ProductCard({ product }) {
-  // We can now trust that the 'product' prop is valid because
-  // it was filtered in the parent ShopPage component.
+  // Convert the price string to a number before formatting it.
+  const priceAsNumber = parseFloat(product.price) || 0;
 
   return (
     <Link href={`/product/${product.id}`} className="group cursor-pointer">
@@ -18,7 +18,7 @@ export default function ProductCard({ product }) {
       </div>
       <h4 className="mt-4 text-base font-medium text-near-black">{product.name}</h4>
       <p className="mt-1 text-sm text-gray-500">Sold by {product.seller}</p>
-      <p className="mt-1 text-lg font-semibold text-near-black">${product.price.toFixed(2)}</p>
+      <p className="mt-1 text-lg font-semibold text-near-black">${priceAsNumber.toFixed(2)}</p>
     </Link>
   );
 }
