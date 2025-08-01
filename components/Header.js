@@ -1,65 +1,64 @@
 "use client";
 
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext'; // Import the useAuth hook
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext'; // 1. Import the useCart hook
+import { useRouter } from 'next/navigation';
 
-// --- Helper component for icons ---
-function Icon({ name, ...props }) {
-    const icons = { menu: '☰' };
-    return <span {...props}>{icons[name] || ''}</span>;
+// A simple SVG icon for the shopping cart
+function CartIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  );
 }
 
 export default function Header() {
-  // Get the user's status and the logout function from our global context
-  const { isAuthenticated, user, logout } = useAuth();
+  const { user, isAuthenticated, supabase } = useAuth();
+  const { cartItemCount } = useCart(); // 2. Get the item count from the CartContext
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-off-white/80 backdrop-blur-lg border-b border-gray-200">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" className="font-playfair text-3xl font-bold text-near-black">
-            Xenzy
+    <header className="bg-white shadow-md sticky top-0 z-50">
+      <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <Link href="/" className="text-2xl font-bold text-gray-800">
+          Xenzy
+        </Link>
+        <div className="flex items-center space-x-4">
+          <Link href="/shop" className="text-gray-600 hover:text-blue-500">Shop</Link>
+          {isAuthenticated ? (
+            <>
+              <Link href="/sell" className="text-gray-600 hover:text-blue-500">Seller Dashboard</Link>
+              {/* Ensure user object exists before trying to access email */}
+              <span className="text-gray-700">{user?.email}</span>
+              <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link href="/auth" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+              Login
+            </Link>
+          )}
+
+          {/* 3. Add the Cart Link and Item Count */}
+          <Link href="/cart" className="relative text-gray-600 hover:text-blue-500">
+            <CartIcon />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {cartItemCount}
+              </span>
+            )}
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/shop" className="text-near-black hover:text-sage-green">Shop</Link>
-            <Link href="/sell" className="text-near-black hover:text-sage-green">Sell</Link>
-            <Link href="/about" className="text-near-black hover:text-sage-green">About</Link>
-            <Link href="/community" className="text-near-black hover:text-sage-green">Community</Link>
-          </nav>
-
-          {/* Action Buttons & Mobile Menu Toggle */}
-          <div className="flex items-center space-x-4">
-            {isAuthenticated ? (
-              // If the user IS authenticated, show their email and a Logout button
-              <>
-                <span className="hidden sm:block text-sm text-gray-600">Welcome, {user.email}</span>
-                <button 
-                  onClick={logout} 
-                  className="hidden sm:block text-near-black hover:text-sage-green"
-                >
-                  Log Out
-                </button>
-              </>
-            ) : (
-              // If the user is NOT authenticated, show the Log In and Sign Up links
-              <>
-                <Link href="/login" className="hidden sm:block text-near-black hover:text-sage-green">
-                  Log In
-                </Link>
-                <Link href="/signup" className="hidden sm:block bg-sage-green text-white px-5 py-2 rounded-lg hover:opacity-90">
-                  Sign Up
-                </Link>
-              </>
-            )}
-            <button className="md:hidden p-2 rounded-md text-near-black hover:bg-gray-200">
-              <Icon name="menu" />
-            </button>
-          </div>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }

@@ -1,64 +1,59 @@
 "use client";
 
-import { createContext, useState, useContext, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode'; // We'll need to install this library
+import { createContext, useState, useContext, useEffect, useMemo } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 
-// 1. Create the context
+// Create the context
 const AuthContext = createContext(null);
 
-// 2. Create the AuthProvider component
+// Create the AuthProvider component
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // Holds user data e.g., { email: '...' }
-  const [token, setToken] = useState(null); // Holds the raw JWT
+  // Create a single, stable Supabase client using environment variables
+  const supabase = useMemo(() => 
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ), 
+  []);
 
-  // This effect runs once when the app loads
-  // It checks if a token exists in localStorage from a previous session
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   useEffect(() => {
-    const storedToken = localStorage.getItem('xenzy_token');
-    if (storedToken) {
-      try {
-        const decodedUser = jwtDecode(storedToken);
-        setUser(decodedUser);
-        setToken(storedToken);
-      } catch (error) {
-        // If token is invalid, clear it
-        localStorage.removeItem('xenzy_token');
-      }
-    }
-  }, []);
+    // This function fetches the initial user session
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      setIsAuthenticated(!!currentUser);
+    };
 
-  // Function to handle user login
-  const login = (newToken) => {
-    try {
-      const decodedUser = jwtDecode(newToken);
-      localStorage.setItem('xenzy_token', newToken);
-      setUser(decodedUser);
-      setToken(newToken);
-    } catch (error) {
-      console.error("Failed to decode token:", error);
-    }
-  };
+    fetchUser();
 
-  // Function to handle user logout
-  const logout = () => {
-    localStorage.removeItem('xenzy_token');
-    setUser(null);
-    setToken(null);
-  };
+    // This listener reacts to login, logout, and other auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      setIsAuthenticated(!!currentUser);
+    });
 
-  // The value provided to all children components
+    // Cleanup the listener when the app closes
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  // Provide the user state and the supabase client to the whole app
   const value = {
     user,
-    token,
-    login,
-    logout,
-    isAuthenticated: !!user, // A simple boolean to check if user is logged in
+    isAuthenticated,
+    supabase, 
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// 3. Create a custom hook to use the context easily
+// Create the custom hook to easily access the context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === null) {
